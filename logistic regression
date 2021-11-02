@@ -1,0 +1,68 @@
+# coding:UTF-8
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression as LR
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import f1_score
+from sklearn.model_selection import GridSearchCV as GSV
+
+df = pd.read_csv('C:\\Users\\cheerful\\Desktop\\pima-indians-diabetes.data')
+# print(df.head())  # 查看数据集
+# print(df.shape)
+# print(df.info())
+x = df[['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFuction', 'Age']]
+y = df[['Outcome']]  # 标签与特征分割
+# print(x.info)
+# print(y.info)
+
+# correlation = x.corr()  # 相关性可视化
+# print(correlation)
+# sns.heatmap(correlation)
+# plt.show()
+
+# x.plot(kind='box',  # 特征可视化
+#        subplots=True,
+#        layout=(5, 5),
+#        sharex=False,
+#        sharey=False,
+#        figsize=(20, 20))
+# plt.show()
+
+# pca_line = PCA().fit(x)  # 观察pca降维数量对信息量影响
+# print(pca_line.explained_variance_ratio_)
+# evrs = np.cumsum(pca_line.explained_variance_ratio_)
+# plt.plot([1, 2, 3, 4, 5, 6, 7, 8], evrs)
+# plt.xticks([1, 2, 3, 4])
+# plt.xlabel("number of components after dimension reduction")
+# plt.ylabel("cumulative explained variance ratio")
+# plt.show()
+
+
+scaler = preprocessing.StandardScaler()  # 数据标准化
+scaler.fit(x)
+x_std = scaler.transform(x)
+# print(x_std)
+
+pca = PCA(n_components=0.99)  # PCA降维
+pca = pca.fit(x_std)
+x_pca = pca.transform(x_std)
+# print(x_pca)
+
+x_train, x_test, y_train, y_test = train_test_split(x_pca, y, test_size=0.1, stratify=y)  # 拆分数据集与训练集
+
+# c_range = [0.001, 0.01, 0.1, 1.0]  # 网格搜索最优参数为C=0.001, max_iter=80, solver='liblinear'
+# solvers = ['liblinear', 'lbfgs', 'newton-cg', 'sag']
+# max_iters = [80, 100, 150, 200, 300]
+# tuned_parameters = dict(solver=solvers, C=c_range, max_iter=max_iters)
+# gr = GSV(LR(), tuned_parameters, scoring='f1', cv=5)
+# gr.fit(x_train, y_train.values.ravel())
+# print(gr.best_estimator_)
+
+lr = LR(C=0.001, max_iter=80, solver='liblinear')
+lr.fit(x_train, y_train.values.ravel())
+print(lr.score(x_test, y_test))
